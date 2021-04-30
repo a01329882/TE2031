@@ -1,0 +1,144 @@
+import smbus
+import time
+import serial
+import board
+import digitalio
+from PIL import Image, ImageDraw, ImageFont
+import adafruit_ssd1306
+# Define the Reset Pin
+oled_reset = None
+ 
+# Change these
+# to the right size for your display!
+WIDTH = 128
+HEIGHT = 64  # Change to 64 if needed
+BORDER = 5
+ 
+# Use for I2C.
+i2c = board.I2C()
+oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, i2c, addr=0x3C, reset=oled_reset)
+
+def leerBloque (n):
+    arreglo = []
+    for i in range (n):
+        arreglo.append(bus.read_byte(address))
+    return arreglo
+def primo(a):
+    for n in range(2, a):
+        if a % n == 0:
+            return False
+    return True
+def multiplicar(s):
+    res = 1
+    for y in range(len(s)):
+        res *= s[y]
+    return res
+def sumarcuadrados(d):
+    res = 0
+    for y in range(len(d)):
+        res += d[y]*d[y]
+    return res
+def imprimirOled(text):
+    oled.fill(0)
+    image = Image.new("1", (oled.width, oled.height))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+    # Draw Some Text
+    (font_width, font_height) = font.getsize(text)
+    draw.text(
+    (oled.width // 2 - font_width // 2, oled.height // 2 - font_height // 2),
+    text,
+    font=font,
+    fill=255,)
+    oled.image(image)
+    oled.show()
+    #texto = text.decode("utf-8")
+    #print (texto)
+    
+def imprimirArreglo(b):
+    for x in range(len(b)):
+        imprimirOled(str(b[x]))
+        time.sleep(1)
+        
+bus = smbus.SMBus(1)
+address = 0x50
+regmsbyte = 0x00
+reglsbyte = 0x00
+valores = []
+valores.append(reglsbyte)
+
+for i in range (20):
+    entrada = -1
+    while (entrada<0 or entrada>255):
+        entrada = int(input("Ingrese un numero entre 0 y 255. Numero ["+str(i)+"]: "))
+    valores.append(entrada)
+    
+print(valores)
+bus.write_i2c_block_data(address,regmsbyte,valores)
+time.sleep(0.5)
+bus.write_i2c_block_data(address,regmsbyte,[reglsbyte])
+pares = []
+impares = []
+primos = []
+multDeTres = []
+for i in range (20):
+    temp = int(bus.read_byte(address))
+    if temp%2 == 0:
+        pares.append(temp)
+    else:
+        impares.append(temp)
+    if primo(temp):
+        primos.append(temp)
+    if temp%3 == 0:
+        multDeTres.append(temp)
+        
+imprimirOled("Pares: ")
+time.sleep(1)
+imprimirArreglo(pares)
+imprimirOled("Impares: ")
+time.sleep(1)
+imprimirArreglo(impares)
+imprimirOled("Primos: ")
+time.sleep(1)
+imprimirArreglo(primos)
+imprimirOled("Multiplos de 3: ")
+time.sleep(1)
+imprimirArreglo(multDeTres)
+respares = sum(pares).to_bytes(4,"big")
+resimpares = (sum(impares)).to_bytes(4,"big")
+resprimos = (multiplicar(primos)).to_bytes(4,"big")
+resmult = (sumarcuadrados(multDeTres)).to_bytes(4,"big")
+imprimirOled("Suma de pares ")
+time.sleep(1)
+imprimirOled(str(sum(pares)))
+time.sleep(1)
+imprimirOled("Resta de impares ")
+time.sleep(1)
+imprimirOled(str(-sum(impares)))
+time.sleep(1)
+imprimirOled("Multiplicacion de primos ")
+time.sleep(1)
+imprimirOled(str(multiplicar(primos)))
+time.sleep(1)
+imprimirOled("Suma cuadrados multiplos 3")
+time.sleep(1)
+imprimirOled(str(sumarcuadrados(multDeTres)))
+time.sleep(1)
+
+bus.write_i2c_block_data(address,regmsbyte,[20, int(respares[0]),int(respares[1]),int(respares[2]),int(respares[3]),
+                                            int(resimpares[0]),int(resimpares[1]),int(resimpares[2]),int(resimpares[3]),
+                                            int(resprimos[0]),int(resprimos[1]),int(resprimos[2]),int(resprimos[3]),
+                                            int(resmult[0]),int(resmult[1]),int(resmult[2]),int(resmult[3])])
+time.sleep(0.5)
+bus.write_i2c_block_data(address,regmsbyte,[20])
+print(sum(pares))
+print(int.from_bytes(leerBloque(4),"big"))
+print(-sum(impares))
+print(-int.from_bytes(leerBloque(4),"big"))
+print(multiplicar(primos))
+print(int.from_bytes(leerBloque(4),"big"))
+print(sumarcuadrados(multDeTres))
+print(int.from_bytes(leerBloque(4),"big"))
+imprimirOled("Hola mundo")
+#print(lectura)
+#print ("".join(map(chr,res)))
