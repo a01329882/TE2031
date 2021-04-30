@@ -17,7 +17,9 @@ BORDER = 5
 # Use for I2C.
 i2c = board.I2C()
 oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, i2c, addr=0x3C, reset=oled_reset)
-
+def leerLocalidad(a):
+    bus.write_i2c_block_data(address,regmsbyte,[reglsbyte+a])
+    return bus.read_byte(address)
 def leerBloque (n):
     arreglo = []
     for i in range (n):
@@ -83,13 +85,13 @@ primos = []
 multDeTres = []
 for i in range (20):
     temp = int(bus.read_byte(address))
-    if temp%2 == 0:
+    if (i+1)%2 == 0:
         pares.append(temp)
     else:
         impares.append(temp)
-    if primo(temp):
+    if primo(i+1):
         primos.append(temp)
-    if temp%3 == 0:
+    if (i+1)%3 == 0:
         multDeTres.append(temp)
         
 imprimirOled("Pares: ")
@@ -131,14 +133,33 @@ bus.write_i2c_block_data(address,regmsbyte,[20, int(respares[0]),int(respares[1]
                                             int(resmult[0]),int(resmult[1]),int(resmult[2]),int(resmult[3])])
 time.sleep(0.5)
 bus.write_i2c_block_data(address,regmsbyte,[20])
+#print(sum(pares))
+print("Suma pares: "+str(int.from_bytes(leerBloque(4),"big")))
+#print(-sum(impares))
+print("Suma impares: "+str(-int.from_bytes(leerBloque(4),"big")))
+#print(multiplicar(primos))
+print("Multiplicacion primos: "+str(int.from_bytes(leerBloque(4),"big")))
+#print(sumarcuadrados(multDeTres))
+print("Suma cuadrados: "+str(int.from_bytes(leerBloque(4),"big")))
+
+for i in range (4):
+    entrada = -1
+    while (entrada<0 or entrada>255):
+        entrada = int(input("Ingrese un numero entre 0 y 255. Numero ["+str(i)+"]: "))
+    valores.append(entrada)
+
+bus.write_i2c_block_data(address,regmsbyte,valores)
+time.sleep(0.5)
+pares.clear()
+bus.write_i2c_block_data(address,regmsbyte,[reglsbyte])
+for i in range (24):
+    temp = int(bus.read_byte(address))
+    if (i+1)%2 == 0:
+        pares.append(temp)
+    else:
+        if ((i+1)>20):
+            pares.append(temp)
+imprimirOled(str(sum(pares)))
 print(sum(pares))
-print(int.from_bytes(leerBloque(4),"big"))
-print(-sum(impares))
-print(-int.from_bytes(leerBloque(4),"big"))
-print(multiplicar(primos))
-print(int.from_bytes(leerBloque(4),"big"))
-print(sumarcuadrados(multDeTres))
-print(int.from_bytes(leerBloque(4),"big"))
-imprimirOled("Hola mundo")
-#print(lectura)
-#print ("".join(map(chr,res)))
+time.sleep(3)
+imprimirOled("Finalizado")
