@@ -17,29 +17,31 @@ BORDER = 5
 # Use for I2C.
 i2c = board.I2C()
 oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, i2c, addr=0x3C, reset=oled_reset)
-def leerLocalidad(a):
-    bus.write_i2c_block_data(address,regmsbyte,[reglsbyte+a])
-    return bus.read_byte(address)
+
 def leerBloque (n):
     arreglo = []
     for i in range (n):
         arreglo.append(bus.read_byte(address))
     return arreglo
+    
 def primo(a):
     for n in range(2, a):
         if a % n == 0:
             return False
     return True
+    
 def multiplicar(s):
     res = 1
     for y in range(len(s)):
         res *= s[y]
     return res
+    
 def sumarcuadrados(d):
     res = 0
     for y in range(len(d)):
         res += d[y]*d[y]
     return res
+    
 def imprimirOled(text):
     oled.fill(0)
     image = Image.new("1", (oled.width, oled.height))
@@ -133,13 +135,9 @@ bus.write_i2c_block_data(address,regmsbyte,[20, int(respares[0]),int(respares[1]
                                             int(resmult[0]),int(resmult[1]),int(resmult[2]),int(resmult[3])])
 time.sleep(0.5)
 bus.write_i2c_block_data(address,regmsbyte,[20])
-#print(sum(pares))
 print("Suma pares: "+str(int.from_bytes(leerBloque(4),"big")))
-#print(-sum(impares))
 print("Suma impares: "+str(-int.from_bytes(leerBloque(4),"big")))
-#print(multiplicar(primos))
 print("Multiplicacion primos: "+str(int.from_bytes(leerBloque(4),"big")))
-#print(sumarcuadrados(multDeTres))
 print("Suma cuadrados: "+str(int.from_bytes(leerBloque(4),"big")))
 
 for i in range (4):
